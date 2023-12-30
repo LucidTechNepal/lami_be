@@ -111,7 +111,7 @@ io.on("connection", async (socket) => {
 const port = process.env.SERVER_PORT || 4000;
 
 
-
+// runnign server
 server.listen(port, () => {
   console.log(`Server is listening on port ${port}`);
 });
