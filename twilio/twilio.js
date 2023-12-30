@@ -1,6 +1,6 @@
 const dotenv = require("dotenv");
 const twilio = require("twilio");
-
+//intiitaizing
 dotenv.config();
 
 const accountSid = process.env.TWILO_ACCOUNTSID;
