@@ -3,9 +3,9 @@ const twilio = require("twilio");
 
 dotenv.config();
 
-const accountSid = process.env.TWILIO_ACCOUNT_SID;
-const authToken = process.env.TWILIO_AUTH_TOKEN;
-const verifyServiceId = process.env.TWILIO_VERIFY_SERVICEID;
+const accountSid = process.env.TWILO_ACCOUNTSID;
+const authToken = process.env.TWILO_AUTHTOKEN;
+const verifyServiceId = process.env.TWILO_VERIFYSID;
 
 const client = new twilio(accountSid, authToken);
 

@@ -165,7 +165,7 @@ client_route.post('/signup',image_upload.single('image'), function (req, res){
 */
 
 //Route for Client Registration
-client_route.post("/signup", image_upload.single("image"), function (req, res) {
+client_route.post("/signup", upload.single("image"), function (req, res) {
   const full_name = req.body.full_name;
   const email = req.body.email;
 
