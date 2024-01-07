@@ -6,6 +6,12 @@ const path = require("path");
 const bodyParser = require("body-parser");
 require("dotenv").config();
 
+//importign for accessing template
+const fs = require('fs');
+const ejs = require('ejs');
+
+const htmlTemplatePath = path.join(__dirname, 'templates', 'email-html-template.html');
+
 // Importing Database connection
 require("./database/database");
 
@@ -39,7 +45,7 @@ app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, "uploads")));
 
 // app.use(route_admin);
-app.use(verifyClient);
+
 app.use(route_client);
 
 app.use("/conversations", route_conversation);

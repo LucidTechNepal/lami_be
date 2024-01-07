@@ -1,5 +1,6 @@
 const express = require("express");
 const bodyParser = require("body-parser");
+const { sendOTPEmail } = require("../emailService");
 
 //Exporting the route
 const client_route = express.Router();
@@ -43,35 +44,108 @@ client_route.get("/user/detail", verifyClient, async function (req, res) {
 
 client_route.post("/createOtp", async (req, res) => {
   try {
-    const sendOtp = await sendSms(phone);
-    if (sendOtp) {
+    const { phone, email } = req.body;
+
+    console.log(req);
+
+    if (phone) {
+      const { countryCode, phoneNumber } = parsePhone(phone);
+      const sendOtp = await sendSms({ phone: phoneNumber, countryCode });
+      if (sendOtp) {
+        return res.status(200).json({ message: "Success", data: sendOtp });
+      }
+    }
+
+    if (email) {
+      const otp = otpGenerator.generate(4, {
+        digits: true,
+        alphabets: false,
+        upperCaseAlphabets: false,
+        specialChars: false,
+        lowerCaseAlphabets: false,
+      });
+      // Set TTL for OTPalp
+      const ttl = 60 * 60 * 1000;
+      const expires = Date.now() + ttl;
+      console.log(expires, "while creating expires");
+
+      // Create data string
+      const data = `${req.phone}.${otp}.${expires}`;
+
+      // Create hash using HMAC-SHA256 algorithm
+      const hash = crypto.createHmac("sha256", key).update(data).digest("hex");
+      const fullHash = `${hash}.${expires}`;
+
+      // Log OTP
+      const sendOtp = sendOTPEmail(email, otp);
+
+      // Return response with OTP and fullHash as JSON along with a status code
       res.status(200).json({ message: "Sucess", data: fullHash });
     }
+
+    return res.status(400).json({ error: "Invalid request" });
   } catch (error) {
     console.error("Error generating OTP:", error);
-    res.status(500).json({ error: "Failed to generate OTP" });
+    return res.status(500).json({ error: "Failed to generate OTP" });
   }
 });
 
+// Utility function to parse phone number
+const parsePhone = (phone) => {
+  const countryCode = phone.slice(0, 3);
+  const phoneNumber = phone.slice(3, 14);
+  return { countryCode, phoneNumber };
+};
+
 client_route.post("/verifyOtp", async (req, res) => {
   try {
-    const { phone, otp } = req.body;
-    const verifiedPhoneNumber = await verifyOtp(phone, otp);
+    const { phone, otp, hash, email } = req.body;
 
-    if (verifiedPhoneNumber) {
-      const data = await Clients.findOne({ phone: verifiedPhoneNumber });
+    let data;
 
-      if (!data) {
-        return res.status(403).json({ message: "Invalid credential" });
+    if (phone && otp) {
+      const verifiedPhoneNumber = await verifyOtp(phone, otp);
+
+      if (verifiedPhoneNumber) {
+        data = await Clients.findOne({ phone: verifiedPhoneNumber });
+
+        if (!data) {
+          return res.status(403).json({ message: "Invalid credential" });
+        }
       }
+    }
 
+    if (email && otp && hash) {
+      const { hash, phone, otp } = req.body;
+      const [hashValue, expires] = hash.split(".");
+      const now = Date.now();
+      if (now > parseInt(expires)) {
+        return res.status(400).json({ error: "OTP expired" });
+      }
+      const loginData = `${phone}.${otp}.${expires}`;
+      const newCalculateHash = crypto
+        .createHmac("sha256", key)
+        .update(loginData)
+        .digest("hex");
+      if (newCalculateHash === hashValue) {
+        data = await Clients.findOne({ email });
+
+        if (!data) {
+          return res.status(403).json({ message: "Invalid credential" });
+        }
+      } else {
+        return res.status(403).json({ message: "Invalid OTP or hash" });
+      }
+    }
+
+    if (data) {
       const token = jwt.sign({ clientID: data._id }, process.env.JWT_SECRET);
 
-      const { _id: userID, full_name, email, image } = data;
+      const { _id: userID, full_name, email, image, role } = data;
 
       return res.status(200).json({
         message: "Success",
-        data: { token, userID, full_name, email, image },
+        data: { token, userID, full_name, email, image, role },
       });
     } else {
       return res.status(403).json({ message: "Invalid OTP" });
@@ -659,6 +733,33 @@ client_route.post("/checkPhoneNumber", async (req, res) => {
   }
 });
 
+client_route.post("/checkEmail", async (req, res) => {
+  try {
+    const email = req.body.email;
+    const client = await Clients.findOne({ email });
+    if (client) {
+      return res.status(200).json({
+        message: "Email exists in the database",
+        data: {
+          email: client.email,
+          phone: client.phone,
+        },
+      });
+    } else {
+      console.log("Email does not exist in the database");
+      return res.status(404).json({
+        message: "Phone number does not exist in the database",
+        data: phone,
+      });
+    }
+  } catch (error) {
+    console.error("Error while checking phone number:", error);
+    res
+      .status(500)
+      .json({ message: "An error occurred while checking phone number" });
+  }
+});
+
 // fetch all connected users for particular users
 client_route.get("/getConnection", verifyClient, async (req, res) => {
   try {
@@ -705,5 +806,12 @@ client_route.get("/getConnection", verifyClient, async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 });
+
+const generateOtp = (length) => {
+  const randomData = randomBytes(Math.ceil(length / 2)).toString("hex");
+  const numericValue = parseInt(randomData, 16);
+  const otp = numericValue % Math.pow(10, length);
+  return otp.toString().padStart(length, "0");
+};
 
 module.exports = client_route;

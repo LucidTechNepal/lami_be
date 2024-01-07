@@ -22,6 +22,7 @@ const schema_client = new mongoose.Schema({
   college: { type: String },
   secondaryImages: [{ type: String }], // Array of secondary images
   verified: { type: Boolean, default: false },
+  role: { type: String, enum: ["basic", "premium"], default:"basic"}
 });
 
 //To calculate user age
