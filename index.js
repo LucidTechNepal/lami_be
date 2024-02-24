@@ -39,7 +39,7 @@ app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, "uploads")));
 
 // app.use(route_admin);
-app.use(verifyClient);
+// app.use(verifyClient);
 app.use(route_client);
 
 app.use("/conversations", route_conversation);
