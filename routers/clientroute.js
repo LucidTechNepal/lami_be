@@ -43,7 +43,7 @@ client_route.get("/user/detail", verifyClient, async function (req, res) {
 
 client_route.post("/createOtp", async (req, res) => {
   try {
-    const sendOtp = await sendSms(phone);
+    const sendOtp = await sendSms(req.body.phone);
     if (sendOtp) {
       res.status(200).json({ message: "Sucess", data: fullHash });
     }
