@@ -367,7 +367,15 @@ client_route.get("/showall", verifyClient, async function (req, res) {
       gender: requestedUserDetails.gender === "male" ? "female" : "male",
     };
 
-    console.log(filter);
+    const friendIds = await ConnectionRequest.find({
+      $or: [
+        { fromUser: requestedUserDetails._id, isFriend: true },
+        { toUser: requestedUserDetails._id, isFriend: true },
+      ],
+    }).distinct("fromUser toUser");
+
+    // Add friend IDs to the filter to exclude them
+    filter._id.$nin = friendIds;
 
     const filteredClients = await Clients.find(filter);
 
@@ -705,5 +713,7 @@ client_route.get("/getConnection", verifyClient, async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 });
+
+
 
 module.exports = client_route;
