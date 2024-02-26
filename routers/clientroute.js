@@ -45,7 +45,7 @@ client_route.post("/createOtp", async (req, res) => {
   try {
     const sendOtp = await sendSms(req.body.phone);
     if (sendOtp) {
-      res.status(200).json({ message: "Sucess", data: fullHash });
+      res.status(200).json({ message: "Otp send to registered phone number" });
     }
   } catch (error) {
     console.error("Error generating OTP:", error);
