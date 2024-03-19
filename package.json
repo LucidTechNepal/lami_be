@@ -1,0 +1,49 @@
+{
+  "dependencies": {
+    "aws-sdk": "^2.895.0",
+    "axios": "^1.4.0",
+    "bcrypt": "^5.1.0",
+    "bcryptjs": "^2.4.3",
+    "body-parser": "^1.20.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "ejs": "^3.1.9",
+    "express": "^4.18.2",
+    "firebase-admin": "^12.0.0",
+    "http-status": "^1.7.0",
+    "ioredis": "^5.3.2",
+    "joi": "^17.11.0",
+    "json-parser": "^3.1.2",
+    "jsonwebtoken": "^9.0.0",
+    "mailgen": "^2.0.28",
+    "mongoose": "^7.0.3",
+    "multer": "^1.4.2",
+    "multer-s3": "^2.9.0",
+    "nodemailer": "^6.9.8",
+    "otp-generator": "^4.0.1",
+    "peer": "^1.0.1",
+    "socket.io": "^4.6.1",
+    "socket.io-client": "^2.0.0",
+    "twilio": "^4.0.1",
+    "uuid": "^9.0.0",
+    "ws": "^8.13.0"
+  },
+  "name": "lami_backend",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LucidTechNepal/Lami_Backend.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/LucidTechNepal/Lami_Backend/issues"
+  },
+  "homepage": "https://github.com/LucidTechNepal/Lami_Backend#readme",
+  "description": ""
+}
