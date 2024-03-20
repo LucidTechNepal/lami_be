@@ -6,7 +6,8 @@ const { sendOTPEmail } = require("../emailService");
 const client_route = express.Router();
 
 //Importing the client Table as client
-const { Clients, ConnectionRequests } = require("../models/client");
+const { Clients, ConnectionRequest } = require("../models/client");
+
 
 const bcrypt = require("bcryptjs");
 const image_upload = require("../middlewares/imageupload");
