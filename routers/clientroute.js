@@ -6,7 +6,7 @@ const { sendOTPEmail } = require("../emailService");
 const client_route = express.Router();
 
 //Importing the client Table as client
-const { Clients, ConnectionRequest } = require("../models/client");
+const { Clients, ConnectionRequests } = require("../models/client");
 
 
 const bcrypt = require("bcryptjs");
@@ -491,7 +491,7 @@ client_route.get("/showall", verifyClient, async function (req, res) {
       gender: requestedUserDetails.gender === "male" ? "female" : "male",
     };
 
-    const friendIds = await ConnectionRequest.find({
+    const friendIds = await ConnectionRequests.find({
       $or: [
         { fromUser: requestedUserDetails._id, isFriend: true },
         { toUser: requestedUserDetails._id, isFriend: true },
