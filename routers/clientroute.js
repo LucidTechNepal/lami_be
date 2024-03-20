@@ -646,10 +646,8 @@ client_route.get("/user/search", (req, res) => {
 
 client_route.post("/checkPhoneNumber", async (req, res) => {
   try {
-    const phone = req.body.phone;
-
-    // Find client with phone number and set timeout for query
-    const client = await Clients.find({ phone: phone }, { timeout: 15000 }); // Increased timeout to 15 seconds
+    const userPhoneNumber = req.body.phone;
+    const client = await Clients.findOne({ phone: userPhoneNumber }, { timeout: 15000 }); // Increased timeout to 15 seconds
 
     if (client) {
       return res
