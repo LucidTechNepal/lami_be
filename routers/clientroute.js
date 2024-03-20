@@ -855,21 +855,16 @@ client_route.post("/checkPhoneNumber", async (req, res) => {
         .json({ message: "Phone number exists", data: phone });
     } else {
       console.log("Phone number not found");
-      return res.status(404).json({ message: "Phone number not found" });
+      return res.status(404).json({ message: "Phone number not found",  data:phone});
     }
   } catch (error) {
     // Check for Mongoose timeout error (optional)
-    if (error.name === 'MongoTimeoutError') {
-      console.error("Mongoose timeout error: Phone number search timed out.");
-      return res.status(500).json({
-        message: "Phone number search timed out. Please try again later.",
-      });
-    } else {
+    
       console.error("Error while checking phone number:", error);
       res
         .status(500)
         .json({ message: "An error occurred while checking phone number" });
-    }
+    
   }
 });
 
