@@ -845,23 +845,31 @@ client_route.post("/checkEmail", async (req, res) => {
 client_route.post("/checkPhoneNumber", async (req, res) => {
   try {
     const phone = req.body.phone;
-    const client = await Clients.findOne({ phone: phone });
+
+    // Find client with phone number (assuming an index exists on the phone field)
+    const client = await Clients.findOne({ phone });
+
     if (client) {
       return res
         .status(200)
-        .json({ message: "Phone number exists in the database", data: phone });
+        .json({ message: "Phone number exists", data: phone });
     } else {
-      console.log("Phone number does not exist in the database");
-      return res.status(404).json({
-        message: "Phone number does not exist in the database",
-        data: phone,
-      });
+      console.log("Phone number not found");
+      return res.status(404).json({ message: "Phone number not found" });
     }
   } catch (error) {
-    console.error("Error while checking phone number:", error);
-    res
-      .status(500)
-      .json({ message: "An error occurred while checking phone number" });
+    // Check for Mongoose timeout error (optional)
+    if (error.name === 'MongoTimeoutError') {
+      console.error("Mongoose timeout error: Phone number search timed out.");
+      return res.status(500).json({
+        message: "Phone number search timed out. Please try again later.",
+      });
+    } else {
+      console.error("Error while checking phone number:", error);
+      res
+        .status(500)
+        .json({ message: "An error occurred while checking phone number" });
+    }
   }
 });
 
