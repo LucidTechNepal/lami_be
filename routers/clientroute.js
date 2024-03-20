@@ -211,6 +211,7 @@ client_route.post("/verifyOtp", async (req, res) => {
 
     if (phone && otp ) {
       const verifiedPhoneNumber = await verifyOtp(phone, otp);
+      console.log(verifiedPhoneNumber)
 
       if (verifiedPhoneNumber) {
         data = await Clients.findOne({ phone: verifiedPhoneNumber });
