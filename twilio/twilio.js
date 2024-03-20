@@ -38,7 +38,7 @@ const verifyOtp = async (phone, otpCode) => {
     console.log(verificationCheck, "verificationCheck")
 
     if (verificationCheck.status === "approved") {
-      const formattedPhoneNumber = phone.replace("+", "").replace("977", "");
+      const formattedPhoneNumber = phone;
       return formattedPhoneNumber;
     } else {
       throw new Error(`OTP verification failed: ${verificationCheck.status}`);
