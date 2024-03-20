@@ -209,26 +209,15 @@ client_route.post("/verifyOtp", async (req, res) => {
 
     let data;
 
-    if (phone && otp && hash) {
-      const { hash, phone, otp } = req.body;
-      const [hashValue, expires] = hash.split(".");
-      const now = Date.now();
-      if (now > parseInt(expires)) {
-        return res.status(400).json({ error: "OTP expired" });
-      }
-      const loginData = `${phone}.${otp}.${expires}`;
-      const newCalculateHash = crypto
-        .createHmac("sha256", key)
-        .update(loginData)
-        .digest("hex");
-      if (newCalculateHash === hashValue) {
-        data = await Clients.findOne({ phone });
+    if (phone && otp ) {
+      const verifiedPhoneNumber = await verifyOtp(phone, otp);
+
+      if (verifiedPhoneNumber) {
+        data = await Clients.findOne({ phone: verifiedPhoneNumber });
 
         if (!data) {
           return res.status(403).json({ message: "Invalid credential" });
         }
-      } else {
-        return res.status(403).json({ message: "Invalid OTP or hash" });
       }
     }
 
