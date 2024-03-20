@@ -647,7 +647,10 @@ client_route.get("/user/search", (req, res) => {
 client_route.post("/checkPhoneNumber", async (req, res) => {
   try {
     const phone = req.body.phone;
-    const client = await Clients.findOne({ phone: phone });
+
+    // Find client with phone number and set timeout for query
+    const client = await Clients.findOne({ phone: phone }, { timeout: 15000 }); // Increased timeout to 15 seconds
+
     if (client) {
       return res
         .status(200)
@@ -660,12 +663,21 @@ client_route.post("/checkPhoneNumber", async (req, res) => {
       });
     }
   } catch (error) {
-    console.error("Error while checking phone number:", error);
-    res
-      .status(500)
-      .json({ message: "An error occurred while checking phone number" });
+    // Check for Mongoose timeout error
+    if (error.name === 'MongoTimeoutError') {
+      console.error("Mongoose timeout error: Phone number search timed out.");
+      return res.status(500).json({
+        message: "Phone number search timed out. Please try again.",
+      });
+    } else {
+      console.error("Error while checking phone number:", error);
+      res
+        .status(500)
+        .json({ message: "An error occurred while checking phone number" });
+    }
   }
 });
+
 
 // fetch all connected users for particular users
 client_route.get("/getConnection", verifyClient, async (req, res) => {
