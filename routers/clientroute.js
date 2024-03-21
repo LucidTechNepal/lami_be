@@ -505,8 +505,10 @@ client_route.get("/showall", verifyClient, async function (req, res) {
         { toUser: requestedUserDetails._id, fromUser: { $nin: filteredClients.map(user => user._id) }, isFriend: true }
       ],
     }).distinct("fromUser toUser");
+    console.log(friendIds)
 
     const filteredClientsExcludingFriends = filteredClients.filter(client => !friendIds.includes(client._id.toString()));
+    console.log(filteredClientsExcludingFriends)
 
     res.status(200).json({ success: true, data: filteredClientsExcludingFriends });
   } catch (e) {
