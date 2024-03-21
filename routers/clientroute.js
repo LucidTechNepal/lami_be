@@ -486,36 +486,34 @@ client_route.get("/showall", verifyClient, async function (req, res) {
       return res.status(404).json({ message: "User details not found" });
     }
 
+    const genderToMatch = requestedUserDetails.gender === "male" ? "female" : "male";
+
     const filter = {
-      _id: { $ne: requestedUserDetails._id.toString() },
-      gender: requestedUserDetails.gender === "male" ? "female" : "male",
+      _id: { $ne: requestedUserDetails._id },
+      gender: genderToMatch,
     };
-
-    const friendIds = await ConnectionRequests.find({
-      $or: [
-        { fromUser: requestedUserDetails._id, toUser: { $ne: requestedUserDetails._id }, isFriend: true },
-        { toUser: requestedUserDetails._id, fromUser: { $ne: requestedUserDetails._id }, isFriend: true }
-      ],
-    }).distinct("fromUser toUser");
-
-    console.log(friendIds, "friendIds")
-
-    // Add friend IDs to the filter to exclude them
-    filter._id.$nin = friendIds;
 
     const filteredClients = await Clients.find(filter);
 
-    console.log(filteredClients);
-
-    if (!filteredClients) {
-      return res.status(404).json({ message: "User details not found" });
+    if (!filteredClients || filteredClients.length === 0) {
+      return res.status(404).json({ message: "No matching users found" });
     }
 
-    res.status(200).json({ success: true, data: filteredClients });
+    const friendIds = await ConnectionRequests.find({
+      $or: [
+        { fromUser: requestedUserDetails._id, toUser: { $nin: filteredClients.map(user => user._id) }, isFriend: true },
+        { toUser: requestedUserDetails._id, fromUser: { $nin: filteredClients.map(user => user._id) }, isFriend: true }
+      ],
+    }).distinct("fromUser toUser");
+
+    const filteredClientsExcludingFriends = filteredClients.filter(client => !friendIds.includes(client._id.toString()));
+
+    res.status(200).json({ success: true, data: filteredClientsExcludingFriends });
   } catch (e) {
     res.status(500).json({ message: e.message });
   }
 });
+
 
 // client_route.get("/showall", verifyClient, async function (req, res) {
 //   const requestedUser = req.user;
