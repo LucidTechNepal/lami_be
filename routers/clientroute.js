@@ -470,51 +470,52 @@ client_route.post("/signup",image_upload.single('image'), function (req, res) {
 //To get all the data of users
 
 client_route.get("/showall", verifyClient, async function (req, res) {
-  const requestedUser = req.user;
-  console.log(requestedUser);
-
   try {
+    const requestedUser = req.user;
+    console.log(requestedUser);
+
     if (!requestedUser) {
       return res.status(400).json({ message: "No user found" });
     }
 
-    const requestedUserDetails = await Clients.findOne({
-      _id: requestedUser._id,
-    });
-
+    const requestedUserDetails = await Clients.findOne({ _id: requestedUser._id });
     if (!requestedUserDetails) {
       return res.status(404).json({ message: "User details not found" });
     }
 
     const genderToMatch = requestedUserDetails.gender === "male" ? "female" : "male";
-
-    const filter = {
+    const filteredClients = await Clients.find({
       _id: { $ne: requestedUserDetails._id },
-      gender: genderToMatch,
-    };
-
-    const filteredClients = await Clients.find(filter);
+      gender: genderToMatch
+    });
 
     if (!filteredClients || filteredClients.length === 0) {
       return res.status(404).json({ message: "No matching users found" });
     }
 
-    const friendIds = await ConnectionRequests.find({
-      $or: [
-        { fromUser: requestedUserDetails._id, toUser: { $nin: filteredClients.map(user => user._id) }, isFriend: true },
-        { toUser: requestedUserDetails._id, fromUser: { $nin: filteredClients.map(user => user._id) }, isFriend: true }
-      ],
-    }).distinct("fromUser toUser");
-    console.log(friendIds)
+    const clientIds = filteredClients.map(client => client._id);
 
-    const filteredClientsExcludingFriends = filteredClients.filter(client => !friendIds.includes(client._id.toString()));
-    console.log(filteredClientsExcludingFriends)
+    const friendRequests = await ConnectionRequests.find({
+      $or: [
+        { fromUser: requestedUserDetails._id, toUser: { $nin: clientIds }, isFriend: true },
+        { toUser: requestedUserDetails._id, fromUser: { $nin: clientIds }, isFriend: true }
+      ]
+    });
+
+    const friendIds = new Set();
+    friendRequests.forEach(request => {
+      friendIds.add(request.fromUser.toString());
+      friendIds.add(request.toUser.toString());
+    });
+
+    const filteredClientsExcludingFriends = filteredClients.filter(client => !friendIds.has(client._id.toString()));
 
     res.status(200).json({ success: true, data: filteredClientsExcludingFriends });
   } catch (e) {
     res.status(500).json({ message: e.message });
   }
 });
+
 
 
 // client_route.get("/showall", verifyClient, async function (req, res) {
