@@ -477,39 +477,53 @@ client_route.get("/showall", verifyClient, async function (req, res) {
       return res.status(400).json({ message: "No user found" });
     }
 
-    const requestedUserDetails = await Clients.findOne({ _id: requestedUser._id });
+    const requestedUserDetails = await Clients.findOne({
+      _id: requestedUser._id,
+    });
     if (!requestedUserDetails) {
       return res.status(404).json({ message: "User details not found" });
     }
 
-    const genderToMatch = requestedUserDetails.gender === "male" ? "female" : "male";
+    const genderToMatch =
+      requestedUserDetails.gender === "male" ? "female" : "male";
     const filteredClients = await Clients.find({
       _id: { $ne: requestedUserDetails._id },
-      gender: genderToMatch
+      gender: genderToMatch,
     });
 
     if (!filteredClients || filteredClients.length === 0) {
       return res.status(404).json({ message: "No matching users found" });
     }
 
-    const clientIds = filteredClients.map(client => client._id);
+    const clientIds = filteredClients.map((client) => client._id);
 
     const friendRequests = await ConnectionRequests.find({
       $or: [
-        { fromUser: requestedUserDetails._id, toUser: { $nin: clientIds._id }, isFriend: true },
-        { toUser: clientIds._id, fromUser: { $nin: requestedUserDetails._id }, isFriend: true }
-      ]
+        {
+          fromUser: requestedUserDetails._id,
+          toUser: { $in: clientIds },
+          isFriend: true,
+        },
+        {
+          toUser: requestedUserDetails._id,
+          fromUser: { $in: clientIds },
+          isFriend: true,
+        },
+      ],
     });
 
     const friendIds = [];
-    friendRequests.forEach(request => {
+    friendRequests.forEach((request) => {
       friendIds.push(request.fromUser.toString());
       friendIds.push(request.toUser.toString());
     });
+    const filteredClientsExcludingFriends = filteredClients.filter(
+      (client) => !friendIds.includes(client._id.toString())
+    );
 
-    const filteredClientsExcludingFriends = filteredClients.filter(client => !friendIds.includes(client._id.toString()));
-
-    res.status(200).json({ success: true, data: filteredClientsExcludingFriends });
+    res
+      .status(200)
+      .json({ success: true, data: filteredClientsExcludingFriends });
   } catch (e) {
     res.status(500).json({ message: e.message });
   }
