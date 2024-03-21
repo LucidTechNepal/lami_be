@@ -498,6 +498,8 @@ client_route.get("/showall", verifyClient, async function (req, res) {
       ],
     }).distinct("fromUser toUser");
 
+    console.log(friendIds, "friendIds")
+
     // Add friend IDs to the filter to exclude them
     filter._id.$nin = friendIds;
 
