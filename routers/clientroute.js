@@ -472,7 +472,6 @@ client_route.post("/signup",image_upload.single('image'), function (req, res) {
 client_route.get("/showall", verifyClient, async function (req, res) {
   try {
     const requestedUser = req.user;
-    console.log(requestedUser);
 
     if (!requestedUser) {
       return res.status(400).json({ message: "No user found" });
@@ -498,7 +497,7 @@ client_route.get("/showall", verifyClient, async function (req, res) {
     const friendRequests = await ConnectionRequests.find({
       $or: [
         { fromUser: requestedUserDetails._id, toUser: { $nin: clientIds }, isFriend: true },
-        { toUser: clientIds, fromUser: { $nin: requestedUserDetails._id }, isFriend: true }
+        { toUser: requestedUserDetails._id, fromUser: { $nin: clientIds }, isFriend: true }
       ]
     });
 
@@ -508,7 +507,7 @@ client_route.get("/showall", verifyClient, async function (req, res) {
       friendIds.push(request.toUser.toString());
     });
 
-    const filteredClientsExcludingFriends = filteredClients.filter(client => !friendIds.has(client._id.toString()));
+    const filteredClientsExcludingFriends = filteredClients.filter(client => !friendIds.includes(client._id.toString()));
 
     res.status(200).json({ success: true, data: filteredClientsExcludingFriends });
   } catch (e) {
