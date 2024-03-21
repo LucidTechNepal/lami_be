@@ -495,6 +495,9 @@ client_route.get("/showall", verifyClient, async function (req, res) {
       $or: [
         { fromUser: requestedUserDetails._id, isFriend: true },
         { toUser: requestedUserDetails._id, isFriend: true },
+        {
+          isFriend: true
+        }
       ],
     }).distinct("fromUser toUser");
 
