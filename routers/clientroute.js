@@ -879,28 +879,29 @@ client_route.post("/checkPhoneNumber", async (req, res) => {
 // fetch all connected users for particular users
 client_route.get("/getConnection", verifyClient, async (req, res) => {
   const loginUserId = req.user;
+
   try {
-    const connectedUser = await ConnectionRequests.find({
-      toUser: loginUserId,
-      status: "accepted",
-      isFriend: true,
+      const connectedRequests = await ConnectionRequests.find({
+      $or: [
+        { fromUser: loginUserId, status: "accepted", isFriend: true },
+        { toUser: loginUserId, status: "accepted", isFriend: true }
+      ]
     });
 
+
     const result = await Promise.all(
-      connectedUser.map(async (request) => {
-        const user = await Clients.find({ _id: request.fromUser });
+      connectedRequests.map(async (request) => {
+        const user = await Clients.findOne({ _id: request.fromUser });
         return {
           user,
-          acceptedDate: request.updateAt,
+          acceptedDate: request.updatedAt,
         };
       })
     );
-    result.forEach((item, index) => {
-      result[index].acceptedDate = connectedUser[index].updatedAt;
-    });
+
     res.status(200).json({
       status: 200,
-      message: "Connected connection request fetched successfully",
+      message: "Connected connection requests fetched successfully",
       result,
     });
   } catch (error) {
