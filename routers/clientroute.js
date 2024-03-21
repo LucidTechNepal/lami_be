@@ -888,7 +888,7 @@ client_route.get("/getConnection", verifyClient, async (req, res) => {
 
     const result = await Promise.all(
       connectedUser.map(async (request) => {
-        const user = await Clients.findOne({ _id: request.fromUser });
+        const user = await Clients.find({ _id: request.fromUser });
         return {
           user,
           acceptedDate: request.updateAt,
