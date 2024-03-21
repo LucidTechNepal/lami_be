@@ -493,11 +493,8 @@ client_route.get("/showall", verifyClient, async function (req, res) {
 
     const friendIds = await ConnectionRequests.find({
       $or: [
-        { fromUser: requestedUserDetails._id, isFriend: true },
-        { toUser: requestedUserDetails._id, isFriend: true },
-        {
-          isFriend: true
-        }
+        { fromUser: requestedUserDetails._id, toUser: { $ne: requestedUserDetails._id }, isFriend: true },
+        { toUser: requestedUserDetails._id, fromUser: { $ne: requestedUserDetails._id }, isFriend: true }
       ],
     }).distinct("fromUser toUser");
 
