@@ -502,10 +502,10 @@ client_route.get("/showall", verifyClient, async function (req, res) {
       ]
     });
 
-    const friendIds = new Set();
+    const friendIds = [];
     friendRequests.forEach(request => {
-      friendIds.add(request.fromUser.toString());
-      friendIds.add(request.toUser.toString());
+      friendIds.push(request.fromUser.toString());
+      friendIds.push(request.toUser.toString());
     });
 
     const filteredClientsExcludingFriends = filteredClients.filter(client => !friendIds.has(client._id.toString()));
