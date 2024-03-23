@@ -883,8 +883,8 @@ client_route.get("/getConnection", verifyClient, async (req, res) => {
   try {
       const connectedRequests = await ConnectionRequests.find({
       $or: [
-        { fromUser: loginUserId, status: "accepted", isFriend: true },
-        { toUser: loginUserId, status: "accepted", isFriend: true }
+        { fromUser: loginUserId._id, status: "accepted", isFriend: true },
+        { toUser: loginUserId._id, status: "accepted", isFriend: true }
       ]
     });
 
