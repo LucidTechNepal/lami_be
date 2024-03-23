@@ -681,13 +681,13 @@ client_route.post("/checkPhoneNumber", async (req, res) => {
 client_route.get("/getConnection", verifyClient, async (req, res) => {
   const loginUserId = req.user;
 
-  const connectedRequests = await ConnectionRequests.find({
-    $or: [
-      { fromUser: loginUserId, status: "accepted", isFriend: true },
-      { toUser: loginUserId, status: "accepted", isFriend: true }
-    ]
-  }).populate('toUser'); // Assuming 'toUser' is a reference field to the Users collection
-  
+  try {
+    const connectedRequests = await ConnectionRequests.find({
+      $or: [
+        { fromUser: loginUserId, status: "accepted", isFriend: true },
+        { toUser: loginUserId, status: "accepted", isFriend: true }
+      ]
+    }).populate('toUser');
    
 
     const result = connectedRequests.map(request => ({
