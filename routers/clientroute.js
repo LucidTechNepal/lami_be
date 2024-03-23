@@ -691,7 +691,7 @@ client_route.get("/getConnection", verifyClient, async (req, res) => {
    
 
     const result = connectedRequests.map(request => ({
-      user: request.toUser,
+      user: request.fromUser,
       acceptedDate: request.updatedAt
     }));
 
