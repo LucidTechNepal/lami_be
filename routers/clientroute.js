@@ -693,9 +693,9 @@ client_route.get("/getConnection", verifyClient, async (req, res) => {
       connectedUsers.map(async (request) => {
         let otherUserId;
  
-        if (request.fromUser.toString() === loginUserId.toString()) {
+        if (request.fromUser.toString() === loginUserId._id.toString()) {
           otherUserId = request.toUser.toString();
-        } else if (request.toUser.toString() === loginUserId.toString()) {
+        } else if (request.toUser.toString() === loginUserId._id.toString()) {
           otherUserId = request.fromUser.toString();
         } else {
           return;
