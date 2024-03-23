@@ -688,6 +688,7 @@ client_route.get("/getConnection", verifyClient, async (req, res) => {
         // { toUser: loginUserId, status: "accepted", isFriend: true }
       ]
     }).populate('toUser');
+    console.log(connectedRequests, "coooo")
 
     const result = connectedRequests.map(request => ({
       user: request.toUser,
