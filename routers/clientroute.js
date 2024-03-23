@@ -688,7 +688,7 @@ client_route.get("/getConnection", verifyClient, async (req, res) => {
         { toUser: loginUserId._id, status: "accepted", isFriend: true },
       ],
     });
- 
+    //check
     const results = await Promise.all(
       connectedUsers.map(async (request) => {
         let otherUserId;
