@@ -685,7 +685,7 @@ client_route.get("/getConnection", verifyClient, async (req, res) => {
     const connectedRequests = await ConnectionRequests.find({
       $or: [
         { fromUser: loginUserId, status: "accepted", isFriend: true },
-        { toUser: loginUserId, status: "accepted", isFriend: true }
+        // { toUser: loginUserId, status: "accepted", isFriend: true }
       ]
     }).populate('toUser');
 
