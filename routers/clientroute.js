@@ -698,7 +698,7 @@ client_route.get("/getConnection", verifyClient, async (req, res) => {
     res.status(200).json({
       status: 200,
       message: "Connected connection requests fetched successfully",
-      connectedRequests,
+      result,
     });
   } catch (error) {
     console.error(error);
