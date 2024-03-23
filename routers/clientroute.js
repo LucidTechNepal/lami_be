@@ -701,7 +701,8 @@ client_route.get("/getConnection", verifyClient, async (req, res) => {
           return;
         }
  
-        const otherUserData = await Clients.find(otherUserId);
+        const otherUserData = await Clients.find({ _id: otherUserId });
+
  
         return {
           toUser: otherUserData,
