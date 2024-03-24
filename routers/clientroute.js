@@ -682,35 +682,42 @@ client_route.get("/getConnection", verifyClient, async (req, res) => {
   try {
     const loginUserId = req.user;
 
-    const connectedUsers = await ConnectionRequests.find({
-      $or: [
-        { fromUser: loginUserId._id, status: "accepted", isFriend: true },
-        { toUser: loginUserId._id, status: "accepted", isFriend: true },
-      ],
+    const connectedUsers = await ConnectionRequests.aggregate([
+      {
+        $match: {
+          $or: [
+            { fromUser: loginUserId._id, status: "accepted", isFriend: true },
+            { toUser: loginUserId._id, status: "accepted", isFriend: true },
+          ],
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          otherUserId: {
+            $cond: {
+              if: { $eq: ["$fromUser", loginUserId._id] },
+              then: "$toUser",
+              else: "$fromUser",
+            },
+          },
+          acceptedDate: 1,
+          isFriend: 1,
+        },
+      },
+    ]);
+
+    const userIds = connectedUsers.map((user) => user.otherUserId);
+    const otherUserData = await Clients.find({ _id: { $in: userIds } }).populate("toUser");
+
+    const results = connectedUsers.map((request) => {
+      const otherUser = otherUserData.find((user) => user._id.toString() === request.otherUserId.toString());
+      return {
+        ...otherUser.toUser,
+        isFriend: otherUser.isFriend,
+        acceptedDate: request.acceptedDate,
+      };
     });
-
-    const results = [];
-    await Promise.all(
-      connectedUsers.map(async (request) => {
-        let otherUserId;
-
-        if (request.fromUser.toString() === loginUserId._id.toString()) {
-          otherUserId = request.toUser.toString();
-        } else if (request.toUser.toString() === loginUserId._id.toString()) {
-          otherUserId = request.fromUser.toString();
-        } else {
-          return;
-        }
-
-        const otherUserData = await Clients.findById({_id:otherUserId}).populate("toUser");
-
-        results.push({
-          ...otherUserData.toUser,
-          isFriend: otherUserData.isFriend,
-          acceptedDate: request.updatedAt,
-        });
-      })
-    );
 
     res.status(200).json({
       status: 200,
