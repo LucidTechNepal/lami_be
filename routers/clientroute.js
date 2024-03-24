@@ -705,8 +705,8 @@ client_route.get("/getConnection", verifyClient, async (req, res) => {
         const otherUserData = await Clients.findById({_id:otherUserId});
 
         results.push({
-          ...otherUserData.toObject(),
-          isFriend: true,
+          ...otherUserData.toUser,
+          isFriend: otherUserData.isFriend,
           acceptedDate: request.updatedAt,
         });
       })
