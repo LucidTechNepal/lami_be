@@ -708,7 +708,7 @@ client_route.get("/getConnection", verifyClient, async (req, res) => {
     ]);
 
     const userIds = connectedUsers.map((user) => user.otherUserId);
-    const otherUserData = await Clients.find({ _id: { $in: userIds } }).populate("toUser");
+    const otherUserData = await Clients.find({ _id: { $in: userIds } });
 
     const results = connectedUsers.map((request) => {
       const otherUser = otherUserData.find((user) => user._id.toString() === request.otherUserId.toString());
