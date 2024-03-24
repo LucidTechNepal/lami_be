@@ -880,43 +880,48 @@ client_route.post("/checkPhoneNumber", async (req, res) => {
 client_route.get("/getConnection", verifyClient, async (req, res) => {
   try {
     const loginUserId = req.user;
- 
-    const connectedUsers = await ConnectionRequests.find({
-      $or: [
-        { fromUser: loginUserId._id, status: "accepted", isFriend: true },
-        { toUser: loginUserId._id, status: "accepted", isFriend: true },
-      ],
-    });
-    //check
-    const results = await Promise.all(
-      connectedUsers.map(async (request) => {
-        let otherUserId;
- 
-        if (request.fromUser.toString() === loginUserId._id.toString()) {
-          otherUserId = request.toUser.toString();
-        } else if (request.toUser.toString() === loginUserId._id.toString()) {
-          otherUserId = request.fromUser.toString();
-        } else {
-          return;
-        }
- 
-        const otherUserData = await Clients.find({ _id: otherUserId });
 
- 
-        return {
-          toUser: otherUserData,
-          isFriend: true,
-          acceptedDate: request.updatedAt,
-        };
-      })
-    );
- 
-    const filteredResults = results.filter(Boolean); // Remove skipped elements
- 
+    const connectedUsers = await ConnectionRequests.aggregate([
+      {
+        $match: {
+          $or: [
+            { fromUser: loginUserId._id, status: "accepted", isFriend: true },
+            { toUser: loginUserId._id, status: "accepted", isFriend: true },
+          ],
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          otherUserId: {
+            $cond: {
+              if: { $eq: ["$fromUser", loginUserId._id] },
+              then: "$toUser",
+              else: "$fromUser",
+            },
+          },
+          acceptedDate: 1,
+          isFriend: 1,
+        },
+      },
+    ]);
+
+    const userIds = connectedUsers.map((user) => user.otherUserId);
+    const otherUserData = await Clients.find({ _id: { $in: userIds } });
+
+    const results = connectedUsers.map((request) => {
+      const otherUser = otherUserData.find((user) => user._id.toString() === request.otherUserId.toString());
+      return {
+        ...otherUser.toObject(),
+        isFriend: request.isFriend,
+        acceptedDate: request.acceptedDate,
+      };
+    });
+
     res.status(200).json({
       status: 200,
       message: "Connected connection request fetched successfully",
-      result: filteredResults,
+      result: results,
     });
   } catch (error) {
     console.error(error);
