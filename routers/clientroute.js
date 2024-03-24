@@ -702,7 +702,7 @@ client_route.get("/getConnection", verifyClient, async (req, res) => {
           return;
         }
 
-        const otherUserData = await Clients.findById(otherUserId);
+        const otherUserData = await Clients.findById({_id:otherUserId});
 
         results.push({
           ...otherUserData.toObject(),
