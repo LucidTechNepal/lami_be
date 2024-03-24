@@ -681,18 +681,19 @@ client_route.post("/checkPhoneNumber", async (req, res) => {
 client_route.get("/getConnection", verifyClient, async (req, res) => {
   try {
     const loginUserId = req.user;
- 
+
     const connectedUsers = await ConnectionRequests.find({
       $or: [
         { fromUser: loginUserId._id, status: "accepted", isFriend: true },
         { toUser: loginUserId._id, status: "accepted", isFriend: true },
       ],
     });
-    //check
-    const results = await Promise.all(
+
+    const results = [];
+    await Promise.all(
       connectedUsers.map(async (request) => {
         let otherUserId;
- 
+
         if (request.fromUser.toString() === loginUserId._id.toString()) {
           otherUserId = request.toUser.toString();
         } else if (request.toUser.toString() === loginUserId._id.toString()) {
@@ -700,24 +701,21 @@ client_route.get("/getConnection", verifyClient, async (req, res) => {
         } else {
           return;
         }
- 
-        const otherUserData = await Clients.find({ _id: otherUserId });
 
- 
-        return {
+        const otherUserData = await Clients.findById(otherUserId);
+
+        results.push({
           toUser: otherUserData,
           isFriend: true,
           acceptedDate: request.updatedAt,
-        };
+        });
       })
     );
- 
-    const filteredResults = results.filter(Boolean); // Remove skipped elements
- 
+
     res.status(200).json({
       status: 200,
       message: "Connected connection request fetched successfully",
-      result: filteredResults,
+      result: results,
     });
   } catch (error) {
     console.error(error);
