@@ -713,8 +713,8 @@ client_route.get("/getConnection", verifyClient, async (req, res) => {
     const results = connectedUsers.map((request) => {
       const otherUser = otherUserData.find((user) => user._id.toString() === request.otherUserId.toString());
       return {
-        ...otherUser.toUser,
-        isFriend: otherUser.isFriend,
+        ...otherUser.toObject(),
+        isFriend: request.isFriend,
         acceptedDate: request.acceptedDate,
       };
     });
